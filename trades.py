@@ -7,28 +7,91 @@ import pickle
 import glob
 
 
+
+class Client():
+
+	def __init__(self, name, instruments={}, balance=1000):
+		self.name = name
+		self.instruments = instruments
+		self.balance = balance
+
+
+	def update_instrument(self, instrument, quantity, buy_sell):
+		if buy_sell == "buy":
+			return None
+
+		elif buy_sell == "sell":
+			return None
+
+	def change_balance(self, balance):
+		""" Accepts negative numbers"""
+		self.balance = self.baland + balance
+
+
+	def trade_log(self, file, logs):
+		client_log = open(name+".log", "a")
+		for line in logs:
+
+			client_log.write(line)
+
+
   
 class Market():
+	""" A class that manages Trades, Time and Files"""
 
-	def __init__(self):
+	def __init__(self, Clients=[]):
+		self.clients = []
 		self.trades = []
 		self.trade_id_count = 1
+		self.days_traded = set()
+		self.traded_instruments = set()
+
+	def add_new_client(self, name, instruments, balance):
+		clients.append(Client(name, instruments, balance))
+
 
 	def process_all_trades(self, csv_file_list, store_file=False):
 		#trade_list = [] #all trades in csv files
+		
 		for file in csv_file_list:
 			with open(file, "rU") as csv_file:
 				csv_reader = csv.reader(csv_file, delimiter=",")
+
+				# Check if main 4 parameters are inputed?
+
 				for row in csv_reader:
 					instrument = row[0]
 					price = float(row[1])
 					quantity = float(row[2])
 					timestamp =  datetime.datetime.strptime(row[3], "%Y-%m-%d %H:%M:%S")
-					#optional = row[4:]
+
+					#Optional columns
+					try:
+						trade_reference = row[4]
+					except IndexError:
+						trade_reference = None
+					try:
+						instrument_type = row[5]
+					except IndexError:
+						instrument_type = None
+
+					try:
+						underlying_asset = row[6]
+					except IndexError:
+						underlying_asset = None
+
+					try:
+						client_reference = row[7]
+					except IndexError:
+						client_reference = None
+
+
+					self.days_traded.add(timestamp.date()) #datetime objects
+					self.traded_instruments.add(instrument)
 
 					
-					self.trades.append(Trade(self.trade_id_count, instrument, price, quantity, timestamp)) #create and append Trade to list
-					logging.warning('{} - Imported Trade: ID: {}'.format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.trade_id_count))
+					self.trades.append(Trade(self.trade_id_count, instrument, price, quantity, timestamp, trade_reference, instrument_type,underlying_asset, client_reference)) #create and append Trade to list
+					logging.info('{} - Imported Trade: ID: {}'.format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.trade_id_count))
 
 					self.trade_id_count += 1
 
@@ -42,40 +105,73 @@ class Market():
 
 		return self.trades
 
-	def get_trades_by_date(self, date): 
+
+	def days_with_trades(self):
+		""" The days in which trades were conducted. 
+		    Returns a set of datetime objects """
+		return self.days_traded
+
+
+	def trades_by_date(self, date): 
 		"""Get trades that match a certain date. Must match format YYYY-MM-DD"""
-		trades_per_date = []
+		trades_on_date = []
 
 		for trade in self.trades:
 			day = datetime.datetime.strptime(date, "%Y-%m-%d").date()
 			if trade.get_date() == day:
-				trades_per_date.append(trade)
+				trades_on_date.append(trade)
 
-		return trades_per_date
+		return trades_on_date
 
-	def get_total_trade_value(self):
+
+
+	def traded_instruments(self):
+		return self.traded_instruments
+
+
+	def report(self, day=None):
+		""" """
+		days_traded_dic = dict((x,[]) for x in self.days_traded)
+
 		return None
+		#for day in self.days_traded:
 
 
-	def get_closing_value(self):
-		return None
 
-	def get_closing_position(self):
-		return None
+		#daily_total_trade_value
+		#daily_closing_value
+		#daily_closing_position
 
-	# def get_constituent_trades(self, trade_reference):
-	# 	consituent_trade_references = []
-	# 	dic = {}
-	# 	for trade in self.trades:
-	# 		try:
-	# 			dic[trade.instrument].append(trade.reference)
-	# 		except KeyError:
-	# 			dic[trade.instrument] = []
-	# 			dic[trade.instrument].append(trade.reference)
+		#total trade value
+		#closeing value
+		#closing position
 
-	# 	for ins in dic:
-	# 		if trade_reference in dic[ins]:
-	# 			return dic[ins]
+	def daily_total_trade_value(self, day):
+		if day is str: #convert string to datetime object if string is given
+			day = datetime.datetime.strptime(day, "%Y-%m-%d").date()
+
+		total_traded_value = 0
+		for trade in self.trades_by_date(day):
+			total_traded_value += (trade.price * trade.quantity)
+
+
+	def daily_closing_value(self):
+		return self.trades_by_date(day)[-1].price
+
+	def daily_closing_position(self):
+		total_quantity = 0
+		for trade in self.trades_by_date(day):
+			total_quantity += trade.quantity 
+
+	def get_constituent_trades(self, trade_reference):
+		""" Returns trades that share a certain trade reference"""
+		consituent_trades = []
+		for trade in self.trades:
+			print trade.trade_reference == trade_reference
+			if trade.trade_reference == trade_reference:
+				consituent_trades.append(trade)
+
+		return consituent_trades
 
 	# def load_pickle_files(self):
 	# 	for file in glob.glob("local_storage/*"):
@@ -122,15 +218,20 @@ class Trade():
 	def get_optional(self):
 		return self.optional
 
+	# def __str__():
+	# 	return None
 
-class Instrument():
-	"""A class for instruments"""
 
-	def __init__(self, total_market_value, closing_value, average_price_per_day):
-		self.total_market_value = total_market_value
-		self.closing_value = closing_value
-		self.average_price_per_day = average_price_per_day
+# class Instrument():
+# 	"""A class for instruments"""
 
+# 	def __init__(self, instrument, price, trade_time):
+# 		self.something = 1
+
+# 	# def __init__(self, total_market_value, closing_value, average_price_per_day):
+# 	# 	self.total_market_value = total_market_value
+# 	# 	self.closing_value = closing_value
+# 	# 	self.average_price_per_day = average_price_per_day
 
 
 
@@ -143,7 +244,10 @@ def main():
 
 	args = parser.parse_args()
 
-	market = Market()
+	client1 = Client("John Doe")
+
+	market = Market([client1])
+	
 
 	if args.file:
 		trades = market.process_all_trades([args.file], args.store)
@@ -154,8 +258,10 @@ def main():
 
 	#print eval(args.files)
 
+	market.report()
 
-	
+
+	#print market.get_constituent_trades("optional1")
 	#trades = market.process_all_trades(["sample.csv"])
 	
 
@@ -166,7 +272,19 @@ def main():
 
 	#print datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+# class TestAnagrams(unittest.TestCase):
+
+#     def test_anagrams(self):
+#         anagrams = Anagrams()
+#         self.assertEquals(anagrams.get_anagrams('plates'), ['palest', 'pastel', 'petals', 'plates', 'staple'])
+#         self.assertEquals(anagrams.get_anagrams('eat'), ['ate', 'eat', 'tea'])
+
+
+
 
 
 if __name__ == "__main__":
     main()
+    #unittest.main()
+
+
