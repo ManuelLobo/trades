@@ -1,0 +1,12 @@
+Trade ID: 1 | Client ID: client01 | Instrument: instrumentA | Price: 1.49 | Quantity: 3.0 | Timestamp: 2017-11-11 16:20:25
+Trade ID: 2 | Client ID: client01 | Instrument: instrumentA | Price: 1.47 | Quantity: 3.0 | Timestamp: 2017-11-11 16:30:25
+Trade ID: 3 | Client ID: client01 | Instrument: instrumentA | Price: 1.45 | Quantity: 3.0 | Timestamp: 2017-11-11 16:40:25
+Trade ID: 4 | Client ID: client01 | Instrument: instrumentA | Price: 1.43 | Quantity: 3.0 | Timestamp: 2017-11-11 16:50:25
+Trade ID: 5 | Client ID: client01 | Instrument: instrumentA | Price: 1.44 | Quantity: 3.0 | Timestamp: 2017-11-11 17:50:25
+Trade ID: 6 | Client ID: client01 | Instrument: instrumentA | Price: 1.46 | Quantity: 3.0 | Timestamp: 2017-11-11 18:20:22
+Trade ID: 7 | Client ID: client01 | Instrument: instrumentA | Price: 1.48 | Quantity: 3.0 | Timestamp: 2017-11-11 18:30:22
+Trade ID: 8 | Client ID: client01 | Instrument: instrumentA | Price: 1.5 | Quantity: -3.0 | Timestamp: 2017-11-11 18:40:22
+Trade ID: 9 | Client ID: client01 | Instrument: instrumentA | Price: 1.55 | Quantity: -3.0 | Timestamp: 2017-11-11 18:50:22
+Trade ID: 10 | Client ID: client01 | Instrument: instrumentB | Price: 1.49 | Quantity: -2.0 | Timestamp: 2017-11-11 10:20:20
+Trade ID: 15 | Client ID: client01 | Instrument: instrumentC | Price: 10.49 | Quantity: 15.0 | Timestamp: 2017-11-15 05:10:25
+Trade ID: 18 | Client ID: client01 | Instrument: instrumentC | Price: 10.49 | Quantity: 3.0 | Timestamp: 2017-11-20 04:20:25
