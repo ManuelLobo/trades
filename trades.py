@@ -155,6 +155,14 @@ class Client():
 		return self.trades
 
 
+	def trades_market_value(self):
+		out_file = open("outputs/all_trades_market_value.log", "w")
+		for trade in self.trades:
+			out_file.write("{} | Market Value: {}\n".format(str(trade), str(trade.get_market_value())))
+
+		out_file.close()
+
+
 	def days_with_trades(self):
 		""" The days in which trades were conducted. 
 		    Returns a set of datetime objects """
@@ -278,7 +286,6 @@ class Client():
 		"""
 
 		out_file = open("outputs/daily_report.log", "w")
-		single_day = datetime.datetime.strptime(single_day, "%Y-%m-%d").date()
 		if not single_day:
 			for day in self.days_traded:
 				out_file.write("Report from {}\n".format(day))
@@ -286,6 +293,7 @@ class Client():
 				out_file.write("Closing value: {}\n".format(self.daily_closing_value(day)))
 				out_file.write("Closing position: {}\n\n".format(self.daily_closing_position(day)))
 		else:
+			single_day = datetime.datetime.strptime(single_day, "%Y-%m-%d").date()
 			out_file.write("Report from {}\n".format(single_day))
 			out_file.write("Total trade value: {}\n".format(self.daily_total_trade_value(single_day)))
 			out_file.write("Closing value: {}\n".format(self.daily_closing_value(single_day)))
@@ -376,13 +384,14 @@ class Trade():
 
 def main():
 	parser = argparse.ArgumentParser(description='Process Trades')
-	parser.add_argument('-c', '--client', help='The Client ID. If client file does not exists, it will create a new file. " ', type=str, dest="client")
+	req_arg = parser.add_argument_group(title='Required Arguments')
+	req_arg.add_argument('-c', '--client', help='The Client ID. If client file does not exists, it will create a new file. " ', type=str, dest="client", required=True)
 	parser.add_argument('-f', '--file', help='Path to file. Example: "file.csv" ', type=str, dest="file")
 	parser.add_argument('-d', '--directory', help='File list: example "[file1, file2, ]"', type=str, dest="directory")
-	parser.add_argument('-i', '--instrument', help="Get the total market value, the closing value, and average price per day. Stores in file instruments.log ", dest="instrument", action='store_true')
-	parser.add_argument('-mv', '--marketvalue', help="Gets market value for every trade. Stores in file trades_marketvalue.log", dest="marketvalue", action='store_true')
-	parser.add_argument('-ct', '--cons_trades', help="Gets constituent trades for a certain trade reference", dest="cons_trades")
-	parser.add_argument('-da', '--daily', help="Total traded value, closing value, and the closing position for each day. Stores in file daily.log", dest="daily", action='store_true')
+	parser.add_argument('-i', '--instrument', help="Get the total market value, the closing value, and average price per day. Stores in file instrument_info.log ", dest="instrument", action='store_true')
+	parser.add_argument('-mv', '--marketvalue', help="Gets market value for every trade. Stores in file all_trades_market_value.log", dest="marketvalue", action='store_true')
+	parser.add_argument('-ct', '--cons_trades', help="Gets constituent trades for a certain trade reference and save in outputs/constituent_trades_ref_X.log", dest="cons_trades")
+	parser.add_argument('-da', '--daily', help="Total traded value, closing value, and the closing position for each day. Stores in file daily_report.log", dest="daily")
 	parser.add_argument('-s', '--store_client', help="Stores client file locally after the processing of the trades.", dest="store_client", action='store_true')
 	#parser.add_argument('-cl', '--client_file', help="Loads previously saved Client file. Path to file must be provided", dest="client_file")
 
@@ -423,31 +432,21 @@ def main():
 	 		client.get_instrument_info()
 
 	 	if args.marketvalue:
-	 		client.get_instrument_info()
+	 		client.trades_market_value()
 
 	 	if args.cons_trades:
 	 		client.get_constituent_trades(args.cons_trades)
 
 	 	if args.daily:
+	 		if args.daily == "all":
+	 			args.daily = None
 	 		client.daily_report(args.daily)
-
-
 
 
  	if args.store_client:
  		store_in_file = open("clients/{}.obj".format(args.client), 'w') #Stores processed objects into a file
  		pickle.dump(client, store_in_file) 
  		store_in_file.close()
-
-
-
-	#print client.get_constituent_trades(1)
-	#print trades[0].get_date()
-	#print client.get_trades_by_date("2017-11-11")
-
-
-	#print datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
 
 
 
