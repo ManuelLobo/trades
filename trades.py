@@ -6,45 +6,55 @@ import argparse
 import pickle 
 import glob
 
+class Market():
+
+	def __init__(self):
+		self.client_list = []
+
+	def add_new_client(self, Client):
+		""" Add a Client Object"""
+		self.client_list.append(Client)
+		logging.info("New client added with id: {}".format(Client.client_id))
 
 
 class Client():
+	def __init__(self, client_id):
+		self.client_id = client_id
+		self.balance = 1000
+		self.instruments = {}
 
-	def __init__(self, name, instruments={}, balance=1000):
-		self.name = name
-		self.instruments = instruments
-		self.balance = balance
+		self.trades = []
+		self.trade_id_count = 1
+		
+		self.days_traded = set()
+		self.instruments_traded = {}
+		
+
+	def get_balance(self):
+		return self.balance
+
+	def get_instruments(self):
+		return self.instruments
+
+	def change_instrument(self, instrument, quantity):
+		""" Accepts negative numbers"""	
+
+		try: #try to add quantity if instrument exists
+			self.instruments[instrument] += quantity
+		except KeyError: #If instrument does not exist
+			self.instruments[instrument] = quantity
+
+		
+		if self.instruments[instrument] <= 0: #If quantity of instrument reaches zero, remove it
+			del self.instruments[instrument]
 
 
-	def update_instrument(self, instrument, quantity, buy_sell):
-		if buy_sell == "buy":
-			return None
 
-		elif buy_sell == "sell":
-			return None
 
 	def change_balance(self, balance):
 		""" Accepts negative numbers"""
-		self.balance = self.baland + balance
+		self.balance = self.balance - balance
 
-
-	def trade_log(self, file, logs):
-		client_log = open(name+".log", "a")
-		for line in logs:
-
-			client_log.write(line)
-
-
-  
-class Market():
-	""" A class that manages Trades, Time and Files"""
-
-	def __init__(self, Clients=[]):
-		self.clients = []
-		self.trades = []
-		self.trade_id_count = 1
-		self.days_traded = set()
-		self.traded_instruments = set()
 
 	def add_new_client(self, name, instruments, balance):
 		clients.append(Client(name, instruments, balance))
@@ -52,7 +62,6 @@ class Market():
 
 	def process_all_trades(self, csv_file_list, store_file=False):
 		#trade_list = [] #all trades in csv files
-		
 		for file in csv_file_list:
 			with open(file, "rU") as csv_file:
 				csv_reader = csv.reader(csv_file, delimiter=",")
@@ -87,21 +96,32 @@ class Market():
 
 
 					self.days_traded.add(timestamp.date()) #datetime objects
-					self.traded_instruments.add(instrument)
 
+
+					self.change_balance(price*quantity)
+					self.change_instrument(instrument, quantity)
+
+					#get instrument trading information
+					try:
+						self.instruments_traded[instrument].append((price, quantity, timestamp))
+					except KeyError:
+						self.instruments_traded[instrument] = []
+						self.instruments_traded[instrument].append((price, quantity, timestamp))
+				
+					self.trades.append(Trade(self.trade_id_count, self.client_id, instrument, price, quantity, timestamp, trade_reference, instrument_type,underlying_asset, client_reference)) #create and append Trade to list
 					
-					self.trades.append(Trade(self.trade_id_count, instrument, price, quantity, timestamp, trade_reference, instrument_type,underlying_asset, client_reference)) #create and append Trade to list
+
 					logging.info('{} - Imported Trade: ID: {}'.format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.trade_id_count))
 
 					self.trade_id_count += 1
 
 			csv_file.close()
 
-		if store_file:
-			i = len(glob.glob("local_storage/*")) + 1
-			store_in_file = open("local_storage/trades{}.obj".format(str(i)), 'w') #Stores processed objects into a file
-			pickle.dump(self.trades, store_in_file) 
-			store_in_file.close()
+		# if store_file:
+		# 	i = len(glob.glob("local_storage/*")) + 1
+		# 	store_in_file = open("local_storage/trades{}.obj".format(str(i)), 'w') #Stores processed objects into a file
+		# 	pickle.dump(self.trades, store_in_file) 
+		# 	store_in_file.close()
 
 		return self.trades
 
@@ -112,28 +132,98 @@ class Market():
 		return self.days_traded
 
 
-	def trades_by_date(self, date): 
+	def trades_by_date(self, day): 
 		"""Get trades that match a certain date. Must match format YYYY-MM-DD"""
 		trades_on_date = []
 
 		for trade in self.trades:
-			day = datetime.datetime.strptime(date, "%Y-%m-%d").date()
+			#day = datetime.datetime.strptime(date, "%Y-%m-%d").date()
 			if trade.get_date() == day:
 				trades_on_date.append(trade)
 
 		return trades_on_date
 
 
+	def daily_total_trade_value(self, day):
+		if day is str: #convert string to datetime object if string is given
+			day = datetime.datetime.strptime(day, "%Y-%m-%d").date()
 
-	def traded_instruments(self):
-		return self.traded_instruments
+		total_traded_value = 0
+		for trade in self.trades_by_date(day):
+			total_traded_value += (trade.price * trade.quantity)
+
+		return total_traded_value
 
 
-	def report(self, day=None):
+	def daily_closing_value(self, day):
+		return self.trades_by_date(day)[-1].price
+
+	def daily_closing_position(self, day):
+		total_quantity = 0
+		for trade in self.trades_by_date(day):
+			total_quantity += trade.quantity 
+
+		return total_quantity
+
+	def get_constituent_trades(self, trade_reference):
+		""" Returns trades that share a certain trade reference"""
+		consituent_trades = []
+		for trade in self.trades:
+			print trade.trade_reference == trade_reference
+			if trade.trade_reference == trade_reference:
+				consituent_trades.append(trade)
+
+		return consituent_trades
+
+	def get_instrument_info(self):
+
+		for day in sorted(self.days_traded):
+			#day = datetime.datetime.strptime(day, "%Y-%m-%d").date()
+			for instrument in sorted(self.instruments_traded):
+				number_of_trades = 0
+				trade_flag = False
+				closing_value = 0
+				total_market_value = 0
+
+				for trade in self.instruments_traded[instrument]:
+					#print trade, instrument, number_of_trades, day, trade[2]
+					if day == trade[2].date():
+						trade_flag = True
+						number_of_trades += 1
+						closing_value = trade[0]
+						total_market_value += trade[0]*trade[1]
+
+				if trade_flag:
+					average_price_per_day = total_market_value/number_of_trades
+				else:
+					average_price_per_day = None		
+
+				print "Report from {} for {}".format(day, instrument)
+				print "Total market value for instrument {}: {}".format(instrument, total_market_value)
+				print "Closing value for instrument {}: {}".format(instrument, closing_value)
+				print "Average price per day for instrument {}: {}".format(instrument, average_price_per_day)
+				print "\n\n\n\n"
+
+	
+
+	def daily_report(self, single_day=None):
 		""" """
-		days_traded_dic = dict((x,[]) for x in self.days_traded)
+		#days_traded_dic = dict((x,[]) for x in self.days_traded)
+		single_day = datetime.datetime.strptime(single_day, "%Y-%m-%d").date()
+		if not single_day:
+			for day in self.days_traded:
+				print "Report from {}".format(day)
+				print "Total trade value: {}".format(self.daily_total_trade_value(day))
+				print "Closing value: {}".format(self.daily_closing_value(day))
+				print "Closing position: {}".format(self.daily_closing_position(day))
+				print "\n\n\n\n"
+		else:
+			print "Report from {}".format(single_day)
+			print "Total trade value: {}".format(self.daily_total_trade_value(single_day))
+			print "Closing value: {}".format(self.daily_closing_value(single_day))
+			print "Closing position: {}".format(self.daily_closing_position(single_day))
+			print "\n\n\n\n"
 
-		return None
 		#for day in self.days_traded:
 
 
@@ -146,32 +236,6 @@ class Market():
 		#closeing value
 		#closing position
 
-	def daily_total_trade_value(self, day):
-		if day is str: #convert string to datetime object if string is given
-			day = datetime.datetime.strptime(day, "%Y-%m-%d").date()
-
-		total_traded_value = 0
-		for trade in self.trades_by_date(day):
-			total_traded_value += (trade.price * trade.quantity)
-
-
-	def daily_closing_value(self):
-		return self.trades_by_date(day)[-1].price
-
-	def daily_closing_position(self):
-		total_quantity = 0
-		for trade in self.trades_by_date(day):
-			total_quantity += trade.quantity 
-
-	def get_constituent_trades(self, trade_reference):
-		""" Returns trades that share a certain trade reference"""
-		consituent_trades = []
-		for trade in self.trades:
-			print trade.trade_reference == trade_reference
-			if trade.trade_reference == trade_reference:
-				consituent_trades.append(trade)
-
-		return consituent_trades
 
 	# def load_pickle_files(self):
 	# 	for file in glob.glob("local_storage/*"):
@@ -185,8 +249,9 @@ class Market():
 class Trade():
 	""" A class that represents a single trade"""
 
-	def __init__(self, id, instrument, price, quantity, timestamp, trade_reference=None, instrument_type=None, underlying_asset=None, client_reference=None):
-		self.id = id
+	def __init__(self, trade_id, client_id, instrument, price, quantity, timestamp, trade_reference=None, instrument_type=None, underlying_asset=None, client_reference=None):
+		self.trade_id = trade_id
+		self.client_id = client_id
 		self.instrument = instrument
 		self.price = price
 		self.quantity = quantity
@@ -244,30 +309,31 @@ def main():
 
 	args = parser.parse_args()
 
-	client1 = Client("John Doe")
-
-	market = Market([client1])
+	market = Market() 
+	client = Client("client01")
+	market.add_new_client(client)
 	
 
 	if args.file:
-		trades = market.process_all_trades([args.file], args.store)
+		trades = client.process_all_trades([args.file], args.store)
 	elif args.directory:
-		trades = market.process_all_trades(glob.glob(args.directory+"/*"), args.store)
+		trades = client.process_all_trades(glob.glob(args.directory+"/*"), args.store)
 	else:
-		print "No input file"
+		logging.warning("No input file")
 
 	#print eval(args.files)
 
-	market.report()
+	#client.daily_report("2017-11-15")
+	print client.get_instrument_info()
 
 
-	#print market.get_constituent_trades("optional1")
-	#trades = market.process_all_trades(["sample.csv"])
+	#print client.get_constituent_trades("optional1")
+	#trades = client.process_all_trades(["sample.csv"])
 	
 
-	#print market.get_constituent_trades(1)
+	#print client.get_constituent_trades(1)
 	#print trades[0].get_date()
-	#print market.get_trades_by_date("2017-11-11")
+	#print client.get_trades_by_date("2017-11-11")
 
 
 	#print datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -279,6 +345,12 @@ def main():
 #         self.assertEquals(anagrams.get_anagrams('plates'), ['palest', 'pastel', 'petals', 'plates', 'staple'])
 #         self.assertEquals(anagrams.get_anagrams('eat'), ['ate', 'eat', 'tea'])
 
+
+	# if store_file:
+	# 	i = len(glob.glob("local_storage/*")) + 1
+	# 	store_in_file = open("local_storage/trades{}.obj".format(str(i)), 'w') #Stores processed objects into a file
+	# 	pickle.dump(self.trades, store_in_file) 
+	# 	store_in_file.close()
 
 
 
