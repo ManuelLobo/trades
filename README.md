@@ -24,7 +24,7 @@ To run the program, at least a Client ID is necessary. If it's the first time ru
 *Get instrument information and save in outputs/instrument_info.log* <br />
 ``` python trades.py --client client0 --instrument```
     
-*Get market value information and save in outputs/trades_marketvalue.log* <br />
+*Get market value information and save in outputs/all_trades_market_value.log* <br />
 ``` python trades.py --client client0 --marketvalue```
     
 *Get constituent trades information for reference "optional1" and save in outputs/constituent_trades_ref_X.log* <br />
