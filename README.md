@@ -30,7 +30,9 @@ To run the program, at least a Client ID is necessary. If it's the first time ru
 *Get constituent trades information for reference "optional1" and save in outputs/constituent_trades_ref_X.log* <br />
 ``` python trades.py --client client0 --cons_trades "optional1"```
     
-*Get several details traded per day and save in outputs/daily_report.log* <br />
+*Get trade details on a specific day and save in outputs/daily_report.log* <br />
 ```python trades.py --client client0 --daily "2017-11-11"```
-    
+ 
+*Get trade details for all the days and save in outputs/daily_report.log* <br />
+```python trades.py --client client0 --daily "all"```
 
