@@ -1,7 +1,0 @@
-README
-
-python test.py --file "sample.csv" --store
-	
-	-f --files       --> path to csv file
-	-d --directory   --> path to directory with csv files
-	-s --store       --> stores trade objects in a file
