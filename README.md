@@ -28,7 +28,7 @@ To run the program, at least a Client ID is necessary. If it's the first time ru
 ``` python trades.py --client client0 --marketvalue```
     
 *Get constituent trades information for reference "optional1" and save in outputs/constituent_trades_ref_X.log* <br />
-``` python trades.py --client client0 --cons_trades "optional1"```
+``` python trades.py --client client0 --cons_trades "Ref1"```
     
 *Get trade details on a specific day and save in outputs/daily_report.log* <br />
 ```python trades.py --client client0 --daily "2017-11-11"```
