@@ -21,7 +21,7 @@ To run the program, at least a Client ID is necessary. If it's the first time ru
 *Process trades and save Client object locally* <br />
 ``` python trades.py --client client0 --file "sample.csv" --store_client```
 
-*(if file client was stored, inputting the file (--file "sample.csv") is no longer necessary to run the following commands)"
+*(if file client was stored, inputting the file (--file "sample.csv") is no longer necessary to run the following commands)*
   
 *Get instrument information and save in outputs/instrument_info.log* <br />
 ``` python trades.py --client client0 --file "sample.csv" --instrument```
