@@ -20,19 +20,21 @@ To run the program, at least a Client ID is necessary. If it's the first time ru
 ## Example Commands:
 *Process trades and save Client object locally* <br />
 ``` python trades.py --client client0 --file "sample.csv" --store_client```
+
+*(if file client was stored, inputting the file (--file "sample.csv") is no longer necessary to run the following commands)"
   
 *Get instrument information and save in outputs/instrument_info.log* <br />
-``` python trades.py --client client0 --instrument```
+``` python trades.py --client client0 --file "sample.csv" --instrument```
     
 *Get market value information and save in outputs/all_trades_market_value.log* <br />
-``` python trades.py --client client0 --marketvalue```
+``` python trades.py --client client0 --file "sample.csv" --marketvalue```
     
 *Get constituent trades information for reference "optional1" and save in outputs/constituent_trades_ref_X.log* <br />
-``` python trades.py --client client0 --cons_trades "Ref1"```
+``` python trades.py --client client0 --file "sample.csv" --cons_trades "Ref1"```
     
 *Get trade details on a specific day and save in outputs/daily_report.log* <br />
-```python trades.py --client client0 --daily "2017-11-11"```
+```python trades.py --client client0 --file "sample.csv" --daily "2017-11-11"```
  
 *Get trade details for all the days and save in outputs/daily_report.log* <br />
-```python trades.py --client client0 --daily "all"```
+```python trades.py --client client0 --file "sample.csv" --daily "all"```
 
