@@ -1,0 +1,24 @@
+
+
+Trying to follow, as much as possible the information provided, this project has 3 main types of objects: Market, Client and Trade. The Market object very simply manages users. The Client object is where all the processing takes place. Every trade that is processed is converted to a Trade object. The code contains a number of functions that may not be used, but would be useful in a more real scenario.
+
+The Client class stores several types of information to be used afterwards. Such information includes: Days in which trades have been conducted, the traded instruments (along with their quantity), a fund balance (initiated at 1000 just so it wouldn’t be negative).
+
+The program is run using the command line with the different possible arguments. It accepts a single file or a list of files. 
+
+It has the ability to store the client object in a local file. After the file has been created, it can then be loaded and the same functions can be applied to it as before. So, for example, it would be possible to load a file, save the client object, load the client object, load another file and save the client object with the additional information. 
+
+
+Using the different command line commands, it is possible to obtain:
+	• Instrument information – Information for each type of instrument in each day that trades were made.
+	• Market Value information – The market value (price*quantity) of every trade that was made.
+	• Constituent trades information – The constituent trades for a specific trade reference
+	• Report per day – A summary for trades in a specific day or all the days with trades.
+
+
+Assumptions (Some assumptions may be wrong due to inexperience in the trading area);
+	• Each file is from one client only, but can have several days of trading
+	• The daily closing value is assumed to be the value of the last trade
+	• The daily closing position is assumed to be the total quantity of instruments traded.
+	• The quantity column in the input file will determine if an instrument was bought or sold by being a positive or negative number, respectively. 
+
