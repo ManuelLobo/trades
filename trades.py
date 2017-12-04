@@ -287,7 +287,7 @@ class Client():
 
 		out_file = open("outputs/daily_report.log", "w")
 		if not single_day:
-			for day in self.days_traded:
+			for day in sorted(self.days_traded):
 				out_file.write("Report from {}\n".format(day))
 				out_file.write("Total trade value: {}\n".format(self.daily_total_trade_value(day)))
 				out_file.write("Closing value: {}\n".format(self.daily_closing_value(day)))
